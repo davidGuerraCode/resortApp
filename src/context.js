@@ -63,12 +63,12 @@ const RoomProvider = props => {
 
     let tempRooms = [...rooms];
 
-    // if (type !== 'all') {
-    tempRooms = tempRooms.filter(room => room.type === value);
-    // }
+    if (value !== 'all') {
+      tempRooms = tempRooms.filter(room => room.type === value);
+    }
 
-    setRoomsData(prevState => ({ ...prevState, sortedRooms: tempRooms }));
     setRoomsData(prevState => ({ ...prevState, [name]: value }));
+    setRoomsData(prevState => ({ ...prevState, sortedRooms: tempRooms }));
   };
 
   useEffect(() => {
