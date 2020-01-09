@@ -45,11 +45,11 @@ const RoomProvider = props => {
     const value = event.type === 'checkbox' ? target.checked : target.value;
     const name = event.target.name;
 
-    setRoomsData(prevState => ({ ...prevState, [name]: value }));
-    filterRooms();
+    // setRoomsData(prevState => ({ ...prevState, [name]: value }));
+    filterRooms(name, value);
   };
 
-  const filterRooms = () => {
+  const filterRooms = (name, value) => {
     const {
       rooms,
       type,
@@ -63,11 +63,12 @@ const RoomProvider = props => {
 
     let tempRooms = [...rooms];
 
-    if (type !== 'all') {
-      tempRooms = tempRooms.filter(room => room.type === type);
-    }
+    // if (type !== 'all') {
+    tempRooms = tempRooms.filter(room => room.type === value);
+    // }
 
     setRoomsData(prevState => ({ ...prevState, sortedRooms: tempRooms }));
+    setRoomsData(prevState => ({ ...prevState, [name]: value }));
   };
 
   useEffect(() => {
