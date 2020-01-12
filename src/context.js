@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import items from './data';
 
 const RoomContext = React.createContext();
@@ -29,10 +29,11 @@ const RoomProvider = props => {
     maxPice: 0,
     minSize: 0,
     maxSize: 0,
-    breakFast: false,
+    breakfast: false,
     pets: false
   });
 
+  const prevState = usePrevious(roomsData);
   const getRoom = slug => {
     const tempRooms = [...roomsData.rooms];
     const room = tempRooms.find(room => room.slug === slug);
@@ -42,33 +43,51 @@ const RoomProvider = props => {
 
   const handleChange = event => {
     const target = event.target;
-    const value = event.type === 'checkbox' ? target.checked : target.value;
+    const value = target.type === 'checkbox' ? target.checked : target.value;
     const name = event.target.name;
-
-    // setRoomsData(prevState => ({ ...prevState, [name]: value }));
-    filterRooms(name, value);
+    setRoomsData(prevState => ({ ...prevState, [name]: value }));
   };
 
-  const filterRooms = (name, value) => {
-    const {
+  const filterRooms = () => {
+    let {
       rooms,
       type,
       capacity,
       price,
       minSize,
       maxSize,
-      breakFast,
+      breakfast,
       pets
     } = roomsData;
 
     let tempRooms = [...rooms];
 
-    if (value !== 'all') {
-      tempRooms = tempRooms.filter(room => room.type === value);
+    capacity = parseInt(capacity);
+    price = parseInt(price);
+
+    if (type !== 'all') {
+      tempRooms = tempRooms.filter(room => room.type === type);
     }
 
-    setRoomsData(prevState => ({ ...prevState, [name]: value }));
-    setRoomsData(prevState => ({ ...prevState, sortedRooms: tempRooms }));
+    if (capacity !== 1) {
+      tempRooms = tempRooms.filter(room => room.capacity >= capacity);
+    }
+
+    tempRooms = tempRooms.filter(room => room.price <= price);
+
+    tempRooms = tempRooms.filter(
+      room => room.size >= minSize && room.size <= maxSize
+    );
+
+    if (breakfast) {
+      tempRooms = tempRooms.filter(room => room.breakfast === true);
+    }
+
+    if (pets) {
+      tempRooms = tempRooms.filter(room => room.pets === true);
+    }
+
+    return tempRooms;
   };
 
   useEffect(() => {
@@ -88,11 +107,34 @@ const RoomProvider = props => {
     }));
   }, []);
 
+  useEffect(() => {
+    if (roomsData !== prevState) {
+      const roomsFiltered = filterRooms();
+      setRoomsData(prevState => ({ ...prevState, sortedRooms: roomsFiltered }));
+    }
+  }, [
+    roomsData.type,
+    roomsData.capacity,
+    roomsData.price,
+    roomsData.breakfast,
+    roomsData.pets
+  ]);
+
   return (
     <RoomContext.Provider value={{ ...roomsData, getRoom, handleChange }}>
       {children}
     </RoomContext.Provider>
   );
 };
+
+function usePrevious(value) {
+  const ref = useRef();
+
+  useEffect(() => {
+    ref.current = value;
+  });
+
+  return ref.current;
+}
 
 export { RoomProvider, RoomContext };
