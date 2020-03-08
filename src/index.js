@@ -1,10 +1,11 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
-// import './index.css';
 import { BrowserRouter as Router } from 'react-router-dom';
 import App from './App';
 import { RoomProvider } from './context';
 import * as serviceWorker from './serviceWorker';
+import dotenv from 'dotenv';
+dotenv.config();
 
 ReactDOM.render(
   <RoomProvider>
