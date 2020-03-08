@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
-import items from './data';
+// import items from './data';
+import Client from './Contentful';
 
 const RoomContext = React.createContext();
 
@@ -32,6 +33,32 @@ const RoomProvider = props => {
     breakfast: false,
     pets: false
   });
+
+  const getData = async () => {
+    try {
+      let response = await Client.getEntries({
+        content_type: 'beachResortRoom',
+        order: 'fields.price'
+      });
+
+      const rooms = formatData(response.items);
+      const featuredRooms = rooms.filter(room => room.featured === true);
+      const maxPrice = Math.max(...rooms.map(item => item.price));
+      const maxSize = Math.max(...rooms.map(item => item.size));
+      setRoomsData(prevState => ({
+        ...prevState,
+        rooms,
+        featuredRooms,
+        sortedRooms: rooms,
+        loading: false,
+        price: maxPrice,
+        maxPrice,
+        maxSize
+      }));
+    } catch (error) {
+      console.log(error);
+    }
+  };
 
   const prevState = usePrevious(roomsData);
   const getRoom = slug => {
@@ -91,20 +118,7 @@ const RoomProvider = props => {
   };
 
   useEffect(() => {
-    const rooms = formatData(items);
-    const featuredRooms = rooms.filter(room => room.featured === true);
-    const maxPrice = Math.max(...rooms.map(item => item.price));
-    const maxSize = Math.max(...rooms.map(item => item.size));
-    setRoomsData(prevState => ({
-      ...prevState,
-      rooms,
-      featuredRooms,
-      sortedRooms: rooms,
-      loading: false,
-      price: maxPrice,
-      maxPrice,
-      maxSize
-    }));
+    getData();
   }, []);
 
   useEffect(() => {
